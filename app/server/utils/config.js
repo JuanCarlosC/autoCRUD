@@ -1,8 +1,6 @@
 const mongoose = require('mongoose')
 const express = require('express')
 
-// var TestingSchema = require('mongoose').model('Song').schema
-
 const createController = (configModel, mongooseModel) => {
     if (!configModel || !mongooseModel) {
         return new Error('Configuration and mongoose model required.')
@@ -178,7 +176,16 @@ const createController = (configModel, mongooseModel) => {
     return controllerMethods
 }
 
-const createModelsAndRoutes = async (api, models) => {
+const createModelsAndRoutes = async (option) => {
+    const models = option.resources
+    const api = option.expressApp
+    const route = option.route
+    const documentationInfo = {
+        route,
+        resources: models,
+
+    }
+
     if (models && Array.isArray(models) && models.length > 0) {
         for (let model in models) {
             const config = models[model]
@@ -220,10 +227,10 @@ const createModelsAndRoutes = async (api, models) => {
 
             if (createControllers) {
                 const modelRoutes =  express.Router()
-                let modelRouteName = '/v1/' + modelName.toLowerCase()
+                let modelRouteName = route + modelName.toLowerCase()
 
                 if (config.meta && config.meta.path) {
-                    modelRouteName = '/v1/' + config.meta.path
+                    modelRouteName = route + config.meta.path
                 }
 
                 modelRoutes.get(modelRouteName , createControllers.list)
@@ -234,6 +241,15 @@ const createModelsAndRoutes = async (api, models) => {
                 api.use(modelRoutes)
             }
         }
+
+        const documentationRouter =  express.Router()
+        let docRoute = route + 'documentation'
+        documentationRouter.get(docRoute, (req, res) => {
+            const successData = documentationInfo
+            return res.json({ success: true, data: successData })
+        })
+
+        api.use(documentationRouter)
     }
 }
 

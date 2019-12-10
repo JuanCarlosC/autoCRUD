@@ -2,6 +2,7 @@ const models = []
 
 const products = {
     name: 'Products',
+    description: 'This models all of our services.',
     properties: {
         name: {
             type: String,
@@ -50,5 +51,29 @@ const user = {
     }
 }
 models.push(user)
+
+const resources = {
+    name: 'Resources',
+    properties: {
+        name: {
+            type: String
+        },
+        properties: {
+            type: Array
+        }
+    }
+}
+models.push(resources)
+
+const properties = {
+    name: 'Properties',
+    properties: {
+        property: {
+            type: Object
+        }
+    }
+}
+models.push(properties)
+
 
 module.exports = models
