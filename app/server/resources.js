@@ -75,5 +75,37 @@ const properties = {
 }
 models.push(properties)
 
+const projects = {
+    name: 'Projects',
+    properties: {
+        version: {
+            type: Number
+        },
+        resources: {
+            type: Array
+        }
+    }
+}
+models.push(projects)
+
+// const localhostboyz = {
+//     name: 'Localhostboyz',
+//     properties: {
+//         member: {
+//             type: Array
+//         }
+//     }
+// }
+// models.push(localhostboyz)
+
+// const homeboy = {
+//     name: 'Homeboy',
+//     properties: {
+//         name: {
+//             type: Array
+//         }
+//     }
+// }
+// models.push(homeboy)
 
 module.exports = models

@@ -176,15 +176,10 @@ const createController = (configModel, mongooseModel) => {
     return controllerMethods
 }
 
-const createModelsAndRoutes = async (option) => {
+const create = async (option) => {
     const models = option.resources
     const api = option.expressApp
     const route = option.route
-    const documentationInfo = {
-        route,
-        resources: models,
-
-    }
 
     if (models && Array.isArray(models) && models.length > 0) {
         for (let model in models) {
@@ -243,6 +238,27 @@ const createModelsAndRoutes = async (option) => {
         }
 
         const documentationRouter =  express.Router()
+
+        let updatedModelsForDocumentation = models.map(model => {
+            let mongooseSchema = mongoose.model(model.name).schema
+
+            Object.keys(model.properties).forEach(prop => {
+                property = model.properties[prop]
+                let instance = mongooseSchema.path(prop).instance
+                model.properties[prop].instanceType = instance
+            })
+            return model
+        })
+
+        const schemaTypes = []
+        Object.keys(mongoose.SchemaTypes).forEach(type => schemaTypes.push(type))
+
+        const documentationInfo = {
+            route,
+            schemaTypes,
+            resources: updatedModelsForDocumentation,
+        }
+
         let docRoute = route + 'documentation'
         documentationRouter.get(docRoute, (req, res) => {
             const successData = documentationInfo
@@ -253,4 +269,4 @@ const createModelsAndRoutes = async (option) => {
     }
 }
 
-module.exports = { createModelsAndRoutes }
+module.exports = { create }

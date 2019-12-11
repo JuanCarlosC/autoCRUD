@@ -2,17 +2,17 @@ const express = require('express')
 const mongoose = require('mongoose')
 const bodyParser = require('body-parser')
 const path = require('path')
-const config = require('./utils/config')
-const models = require('./models')
+const autoCRUD = require('./utils/autoCRUD')
+const resources = require('./resources')
 
 const app = express()
 
 app.use(bodyParser.urlencoded({extended: false}))
 app.use(bodyParser.json({limit: '100kb'}))
 
-config.createModelsAndRoutes({
+autoCRUD.create({
     expressApp: app,
-    resources: models,
+    resources: resources,
     route: '/api/v1/'
 })
 

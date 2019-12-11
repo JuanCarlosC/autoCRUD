@@ -1,6 +1,7 @@
 <html>
     <head>
-        <title>Ok</title>
+        <title>AutoCRUD</title>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.10/vue.min.js" integrity="sha256-chlNFSVx3TdcQ2Xlw7SvnbLAavAQLO0Y/LBiWX04viY=" crossorigin="anonymous"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.19.0/axios.min.js" integrity="sha256-S1J4GVHHDMiirir9qsXWc8ZWw74PHHafpsHp5PXtjTs=" crossorigin="anonymous"></script>
     </head>
     <body>
@@ -19,19 +20,26 @@
                 </div>
             </div>
         </header>
-        <main>
+        <main id="auto-crud-app">
             <aside>
                 <nav>
                     <section>
                         <div class="header" style="font-size: 0.7rem; color: #898989;">RESOURCES</div>
-                        <ul id="resources-list" style="padding: 0; list-style: none;"></ul>
+                        <ul id="resources-list" style="padding: 0; list-style: none;">
+                            <li
+                                v-for="resource in resources"
+                                class="resource-item">
+                                <img style="opacity: 0.6" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABIAAAASCAYAAABWzo5XAAAALklEQVR4AWMYGeAKEP/HghtIMgWhkXLD/pOBr1LLoP+jBqHhUYMukWoIWM/wBwACCZi5AdVlfwAAAABJRU5ErkJggg==">
+                                &nbsp; &nbsp; {{ resource.name }}
+                            </li>
+                        </ul>
                     </section>
                 </nav>
             </aside>
             <div class="main-content">
-                <div style="width: 100%; height: 3rem; background: #fff; display: flex; border-bottom: 2px solid #efefef;">
+                <div style="width: 100%;height: 3rem;background: #fff;display: flex;border-bottom: 2px solid #efefef;top: 0;z-index: 2;position: sticky;">
                     <div style="display: flex; flex-wrap: wrap; align-items: center; width: 100%; ">
-                        <div style="width: 20%; padding-left: 1.5rem;">Resources</div>
+                        <div style="width: 20%; padding-left: 1.5rem;">All Resources</div>
                         <div style="width: 60%; display: flex; justify-content: center;">
                             <button class="reset view-selected" style="height: 3rem; width: 5rem; text-align: center; font-size: 0.9rem;">
                                 API
@@ -45,7 +53,55 @@
                         </div>
                     </div>
                 </div>
-                <div id="content"></div>
+                <div id="content">
+                    <div
+                        v-for="resource in resources"
+                        class="resource-block">
+                        <h3 style="font-weight: 100; color: #4b4b4b;">
+                            {{ resource.name }}
+                        </h3>
+                        <div style="padding: 0; background: white;border: 1px solid #ececec;padding: 1.5rem;border-radius: 7px;">
+                            <div>Routes</div>
+                            <ul style="padding: 0;list-style: none;">
+                                <li
+                                    v-for="endpoint in resource.endpoints"
+                                    style="width: 100%; padding-bottom: 1rem;">
+                                    <div style="width: 100%; display: flex; height: 1.6rem;">
+                                        <div
+                                            :style="{ 'color': getRequestTypeColor(endpoint.requestType), 'border': `1px solid ${getRequestTypeColor(endpoint.requestType)}` }" 
+                                            style="border-radius: 2rem;min-width: 5rem;display: flex;justify-content: center;align-items: center; font-size: 0.8rem; opacity: 0.8;">
+                                            {{ endpoint.requestType }}
+                                        </div>
+                                        <div style="display: flex; justify-content: center; align-items: center; padding-left: 1rem; color: #4b4b4b; font-size: 0.9rem;">
+                                            {{ endpoint.endpoint }}
+                                        </div>
+                                        <div style="flex: 1;justify-content: flex-end;font-size: 0.8rem;color: rgb(137, 137, 137);display: flex;align-items: center;text-align: right;padding-left: 3rem;">
+                                            {{ endpoint.description }}
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <!-- check 123 -->
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                        <div id="configure-resource" style="padding: 0; background: white;border: 1px solid #ececec;padding: 1.5rem;border-radius: 7px;">
+                            <div>Configuration</div>
+                            <div class="resource-name-path">
+                                <div
+                                    v-for="property in Object.keys(resource.properties)"
+                                    class="input-wrapper">
+                                    <div style="width: 30%;font-size: 0.8rem;color: rgb(137, 137, 137);height: 100%;display: flex;align-items: center;">{{property}} :</div>
+                                    <div style="width: 70%; height: 100%;">
+                                        <select style="width: 100%;background: white;border: 1px solid #d6d6d6;height: 100%;">
+                                            <option value="">{{resource.properties[property].instanceType}}</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </main>
     </body>
@@ -117,103 +173,77 @@
         button.view-selected {
             border-bottom: 2px solid #eda809;
         }
+
+        .input-wrapper {
+            width: 100%;
+            display: flex;
+            flex-wrap: wrap;
+            height: 2rem;
+            margin-top: 1rem;
+        }
     </style>
     <script>
-        const resourcesListEl = document.getElementById('resources-list')
-        const contentEl = document.getElementById('content')
+        var app = new Vue({
+            el: '#auto-crud-app',
+            data: {
+                message: 'Hello Vue!',
+                resources: [],
+                route: ''
+            },
+            methods: {
+                getRequestTypeColor (requestType) {
+                    let requestTypeColor = '#e64947'
+                    if (requestType === 'GET') requestTypeColor = '#26af7c'
+                    if (requestType === 'POST') requestTypeColor = '#eda809'
+                    if (requestType === 'PUT') requestTypeColor = '#0e75e2'
+                    if (requestType === 'DELETE') requestTypeColor = '#e64947'
 
-        const endPointTemplate = (requestType, endpoint, description) => {
-            let requestTypeColor = '#e64947'
-            if (requestType === 'GET') requestTypeColor = '#26af7c'
-            if (requestType === 'POST') requestTypeColor = '#eda809'
-            if (requestType === 'PUT') requestTypeColor = '#0e75e2'
-            if (requestType === 'DELETE') requestTypeColor = '#e64947'
-
-            return `
-                <li style="width: 100%; padding-bottom: 1rem;">
-                    <div style="width: 100%; display: flex; height: 1.6rem;">
-                        <div style="color: ${requestTypeColor}; border: 1px solid ${requestTypeColor}; border-radius: 2rem;min-width: 5rem;display: flex;justify-content: center;align-items: center; font-size: 0.8rem; opacity: 0.8;">
-                            ${requestType}
-                        </div>
-                        <div style="display: flex; justify-content: center; align-items: center; padding-left: 1rem; color: #4b4b4b; font-size: 0.9rem;">
-                            ${endpoint}
-                        </div>
-                        <div style="flex: 1;justify-content: flex-end;font-size: 0.8rem;color: #4b4b4b;display: flex;align-items: center;text-align: right;padding-left: 3rem;">
-                            ${description}
-                        </div>
-                    </div>
-                </li>
-            `
-        }
-
-        const resourceBlockTemplate = (resource, route) => {
-            console.log('resourceBlockTemplate resource', resource)
-            let routeName = route + resource.name.toLowerCase()
-
-            if (resource.meta && resource.meta.path) {
-                routeName = route + resource.meta.path
-            }
-
-            const endpoints = [
-                {
-                    requestType: 'GET',
-                    endpoint: routeName,
-                    description: 'asdasdasdas'
-                },
-                {
-                    requestType: 'POST',
-                    endpoint: routeName,
-                    description: 'asdasdasdas'
-                },
-                {
-                    requestType: 'PUT',
-                    endpoint: `${routeName}/{id}`,
-                    description: 'asdasdasdas'
-                },
-                {
-                    requestType: 'DELETE',
-                    endpoint: `${routeName}/{id}`,
-                    description: 'asdasdasdas'
+                    return requestTypeColor
                 }
-            ]
+            },
+            mounted () {
+                const vueInstance = this
+                axios.get('/api/v1/documentation')
+                    .then(function (response) {
+                        const data = response.data.data
+                        const resources = data.resources
+                        const route = data.route
 
-            return `
-                <div class="resource-block">
-                    <h3 style="font-weight: 100; color: #4b4b4b;">
-                        ${resource.name}
-                    </h3>
-                    <div>
-                        <ul style="padding: 0;list-style: none;background: white;border: 1px solid #ececec;padding: 1.5rem;border-radius: 7px;">
-                            ${endpoints.reduce((finalHTML, endpoint) => { return finalHTML += endPointTemplate(endpoint.requestType, endpoint.endpoint, endpoint.description) }, '')}
-                        </ul>
-                    </div>
-                </div>
-            `
-        }
+                        vueInstance.resources = resources.map(resource => {
+                            let routeName = route + resource.name.toLowerCase()
+                            if (resource.meta && resource.meta.path) { routeName = route + resource.meta.path }
 
-        axios.get('/api/v1/documentation')
-            .then(function (response) {
-                const data = response.data.data
-                const resources = data.resources
-                const route = data.route
+                            resource.endpoints = [
+                                {
+                                    requestType: 'GET',
+                                    endpoint: routeName,
+                                    description: 'asdasdasdas'
+                                },
+                                {
+                                    requestType: 'POST',
+                                    endpoint: routeName,
+                                    description: 'asdasdasdas'
+                                },
+                                {
+                                    requestType: 'PUT',
+                                    endpoint: `${routeName}/{id}`,
+                                    description: 'asdasdasdas'
+                                },
+                                {
+                                    requestType: 'DELETE',
+                                    endpoint: `${routeName}/{id}`,
+                                    description: 'asdasdasdas'
+                                }
+                            ]
 
-                resources.forEach(resource => {
-                    console.log('resource', resource)
-                    console.log('resourcesListEl', resourcesListEl)
-                    resourcesListEl.innerHTML += `
-                        <li class="resource-item">
-                            <img style="opacity: 0.6" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABIAAAASCAYAAABWzo5XAAAALklEQVR4AWMYGeAKEP/HghtIMgWhkXLD/pOBr1LLoP+jBqHhUYMukWoIWM/wBwACCZi5AdVlfwAAAABJRU5ErkJggg==">
-                            &nbsp; &nbsp; ${resource.name}
-                        </li>
-                    `
+                            return resource
+                        })
 
-                    contentEl.innerHTML += `
-                        ${resourceBlockTemplate(resource, route)}
-                    `
-                })
-            })
-
-            .catch(function (error) { console.log(error); })
-            .finally(function () { });
+                        vueInstance.route = route
+                    })
+                    .catch(function (error) { console.log(error); })
+                    .finally(function () { });
+            }
+        })
     </script>
 </html>
