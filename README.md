@@ -1,4 +1,4 @@
-# autogenerate-crud-node-express-mongo
+# autoCRUD
 
 ### Create express app and use the auotCRUD util:
 
