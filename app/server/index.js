@@ -2,7 +2,7 @@ const express = require('express')
 const mongoose = require('mongoose')
 const bodyParser = require('body-parser')
 const path = require('path')
-const autoCRUD = require('./utils/autoCRUD')
+const autoCRUD = require('express-autocrud')
 const resources = require('./resources')
 
 const app = express()
